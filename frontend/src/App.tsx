@@ -6,14 +6,15 @@ import { DrawingState } from './types';
 import { TooltipProvider } from './components/ui/tooltip';
 import { Input } from './components/ui/input';
 import { Button } from './components/ui/button';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, Trash2 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
 // Initialize AI lazily to avoid issues if key is missing at load time
 let ai: GoogleGenAI | null = null;
 const getAI = () => {
   if (!ai) {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const env = import.meta as any;
+    const apiKey = env.env?.VITE_GEMINI_API_KEY || (process.env as any)?.GEMINI_API_KEY;
     if (!apiKey) {
       console.warn("GEMINI_API_KEY is missing");
       return null;
@@ -21,6 +22,11 @@ const getAI = () => {
     ai = new GoogleGenAI({ apiKey });
   }
   return ai;
+};
+
+const getModelName = () => {
+  const env = import.meta as any;
+  return env.env?.VITE_GEMINI_MODEL || (process.env as any)?.GEMINI_MODEL || "gemini-3.1-flash-lite-preview";
 };
 
 export default function App() {
@@ -112,12 +118,38 @@ export default function App() {
         
         saveHistory(ctx.getImageData(0, 0, canvas.width, canvas.height));
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         saveToLocalStorage();
       };
       img.src = e.target?.result as string;
     };
     reader.readAsDataURL(file);
+  };
+
+  const clearCanvas = () => {
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    const ctx = canvas?.getContext('2d');
+    if (!ctx || !canvas) return;
+
+    saveHistory(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    saveToLocalStorage();
+  };
+
+  const isCanvasBlank = (canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return true;
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i] !== 255 || data[i + 1] !== 255 || data[i + 2] !== 255 || data[i + 3] !== 255) {
+        return false;
+      }
+    }
+    return true;
   };
 
   const handleAIDraw = async () => {
@@ -132,23 +164,32 @@ export default function App() {
       return;
     }
 
+    const blank = isCanvasBlank(canvas);
+    const promptText = blank
+      ? `Generate a new image based on this prompt: ${aiPrompt}. Return ONLY the generated image.`
+      : `Modify this drawing based on this prompt: ${aiPrompt}. Return ONLY the modified image.`;
+
     setIsAiLoading(true);
     try {
-      const base64Image = canvas.toDataURL('image/png').split(',')[1];
-      
-      const response = await aiInstance.models.generateContent({
-        model: "gemini-2.5-flash-image",
+      const request: any = {
+        model: "gemini-3.1-flash-lite-preview",
         contents: {
           parts: [
-            { inlineData: { data: base64Image, mimeType: "image/png" } },
-            { text: `Modify this drawing based on this prompt: ${aiPrompt}. Return ONLY the modified image.` }
+            { text: promptText }
           ]
         }
-      });
+      };
 
-      const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+      if (!blank) {
+        const base64Image = canvas.toDataURL('image/png').split(',')[1];
+        request.contents.parts.unshift({ inlineData: { data: base64Image, mimeType: "image/png" } });
+      }
+
+      request.model = getModelName();
+      const response = await aiInstance.models.generateContent(request);
+      const imageBase64 = response.data ?? response.candidates?.[0]?.content?.parts.find((p: any) => p.inlineData)?.inlineData?.data;
       
-      if (imagePart?.inlineData?.data) {
+      if (imageBase64) {
         const img = new Image();
         img.onload = () => {
           const ctx = canvas.getContext('2d');
@@ -159,7 +200,10 @@ export default function App() {
             saveToLocalStorage();
           }
         };
-        img.src = `data:image/png;base64,${imagePart.inlineData.data}`;
+        img.src = `data:image/png;base64,${imageBase64}`;
+      } else {
+        console.warn('AI did not return image data', response);
+        alert('AI did not return an image. Please try a different prompt or model.');
       }
     } catch (error) {
       console.error('AI Error:', error);
@@ -228,6 +272,15 @@ export default function App() {
               >
                 {isAiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                 AI Draw
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 gap-2 shrink-0"
+                onClick={clearCanvas}
+              >
+                <Trash2 className="h-3 w-3" />
+                Clear
               </Button>
             </div>
           </div>
