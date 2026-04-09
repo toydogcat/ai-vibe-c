@@ -6,28 +6,25 @@ import { DrawingState } from './types';
 import { TooltipProvider } from './components/ui/tooltip';
 import { Input } from './components/ui/input';
 import { Button } from './components/ui/button';
-import { Sparkles, Loader2, Trash2 } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
+import { Sparkles, Loader2, Trash2, Lock, Unlock } from 'lucide-react';
 
-// Initialize AI lazily to avoid issues if key is missing at load time
-let ai: GoogleGenAI | null = null;
-const getAI = () => {
-  if (!ai) {
-    const env = import.meta as any;
-    const apiKey = env.env?.VITE_GEMINI_API_KEY || (process.env as any)?.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.warn("GEMINI_API_KEY is missing");
-      return null;
-    }
-    ai = new GoogleGenAI({ apiKey });
+const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+const ADMIN_PASSWORD = (import.meta as any).env?.VITE_ADMIN_PASSWORD || 'admin123';
+
+async function trackButtonEvent(buttonName: string) {
+  try {
+    await fetch(`${API_URL}/api/button-event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        button_name: buttonName,
+        timestamp: Date.now() / 1000
+      })
+    });
+  } catch (error) {
+    console.error('Failed to track button:', error);
   }
-  return ai;
-};
-
-const getModelName = () => {
-  const env = import.meta as any;
-  return env.env?.VITE_GEMINI_MODEL || (process.env as any)?.GEMINI_MODEL || "gemini-3.1-flash-lite-preview";
-};
+}
 
 export default function App() {
   const [state, setState] = useState<DrawingState>({
@@ -42,12 +39,17 @@ export default function App() {
   const [redoStack, setRedoStack] = useState<ImageData[]>([]);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
 
   const handleColorChange = (color: string) => {
+    trackButtonEvent('color_changed');
     setState(prev => ({ ...prev, color }));
   };
 
   const handleSizeChange = (brushSize: number) => {
+    trackButtonEvent('brush_size_changed');
     setState(prev => ({ ...prev, brushSize }));
   };
 
@@ -59,13 +61,13 @@ export default function App() {
   }, []);
 
   const saveHistory = useCallback((data: ImageData) => {
-    setUndoStack(prev => [...prev.slice(-19), data]); // Keep last 20 steps
+    setUndoStack(prev => [...prev.slice(-19), data]);
     setRedoStack([]);
-    // Save to local storage after a short delay to ensure canvas is updated
     setTimeout(saveToLocalStorage, 100);
   }, [saveToLocalStorage]);
 
   const handleUndo = () => {
+    trackButtonEvent('undo');
     if (undoStack.length === 0) return;
     
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
@@ -82,6 +84,7 @@ export default function App() {
   };
 
   const handleRedo = () => {
+    trackButtonEvent('redo');
     if (redoStack.length === 0) return;
 
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
@@ -98,6 +101,7 @@ export default function App() {
   };
 
   const handleDownload = () => {
+    trackButtonEvent('download');
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     if (!canvas) return;
     
@@ -108,6 +112,7 @@ export default function App() {
   };
 
   const handleUpload = (file: File) => {
+    trackButtonEvent('upload');
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
@@ -129,6 +134,7 @@ export default function App() {
   };
 
   const clearCanvas = () => {
+    trackButtonEvent('clear_canvas');
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     const ctx = canvas?.getContext('2d');
     if (!ctx || !canvas) return;
@@ -154,42 +160,34 @@ export default function App() {
 
   const handleAIDraw = async () => {
     if (!aiPrompt.trim()) return;
+    trackButtonEvent('ai_draw');
     
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     if (!canvas) return;
-    
-    const aiInstance = getAI();
-    if (!aiInstance) {
-      alert("AI is not configured. Please check your API key.");
-      return;
-    }
 
     const blank = isCanvasBlank(canvas);
-    const promptText = blank
-      ? `Generate a new image based on this prompt: ${aiPrompt}. Return ONLY the generated image.`
-      : `Modify this drawing based on this prompt: ${aiPrompt}. Return ONLY the modified image.`;
 
     setIsAiLoading(true);
     try {
-      const request: any = {
-        model: "gemini-3.1-flash-lite-preview",
-        contents: {
-          parts: [
-            { text: promptText }
-          ]
-        }
-      };
+      const canvasData = blank ? null : canvas.toDataURL('image/png').split(',')[1];
+      
+      const response = await fetch(`${API_URL}/api/ai-draw`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+          canvas_data: canvasData,
+          is_blank: blank
+        })
+      });
 
-      if (!blank) {
-        const base64Image = canvas.toDataURL('image/png').split(',')[1];
-        request.contents.parts.unshift({ inlineData: { data: base64Image, mimeType: "image/png" } });
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
       }
 
-      request.model = getModelName();
-      const response = await aiInstance.models.generateContent(request);
-      const imageBase64 = response.data ?? response.candidates?.[0]?.content?.parts.find((p: any) => p.inlineData)?.inlineData?.data;
+      const result = await response.json();
       
-      if (imageBase64) {
+      if (result.success && result.image_data) {
         const img = new Image();
         img.onload = () => {
           const ctx = canvas.getContext('2d');
@@ -200,19 +198,39 @@ export default function App() {
             saveToLocalStorage();
           }
         };
-        img.src = `data:image/png;base64,${imageBase64}`;
+        img.src = `data:image/png;base64,${result.image_data}`;
       } else {
-        console.warn('AI did not return image data', response);
-        alert('AI did not return an image. Please try a different prompt or model.');
+        alert(`AI Error: ${result.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('AI Error:', error);
+      alert(`Failed to generate image: ${error}`);
     } finally {
       setIsAiLoading(false);
     }
   };
 
-  // Keyboard shortcuts
+  const handleAdminToggle = () => {
+    trackButtonEvent('admin_toggle');
+    if (isAdminUnlocked) {
+      setIsAdminUnlocked(false);
+      setAdminPassword('');
+    } else {
+      setShowPasswordPrompt(true);
+    }
+  };
+
+  const handlePasswordSubmit = () => {
+    if (adminPassword === ADMIN_PASSWORD) {
+      setIsAdminUnlocked(true);
+      setShowPasswordPrompt(false);
+      setAdminPassword('');
+    } else {
+      alert('Incorrect password');
+      setAdminPassword('');
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
@@ -229,7 +247,6 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undoStack, redoStack]);
 
-  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('saved_drawing');
     if (saved) {
@@ -246,6 +263,28 @@ export default function App() {
   return (
     <TooltipProvider>
       <div className="flex flex-col h-screen w-screen bg-background overflow-hidden font-sans">
+        {/* Password Prompt Modal */}
+        {showPasswordPrompt && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card p-6 rounded-lg shadow-lg">
+              <h2 className="text-lg font-bold mb-4">Admin Password</h2>
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                placeholder="Enter password"
+                className="w-64 px-3 py-2 border rounded mb-4 text-xs"
+                autoFocus
+              />
+              <div className="flex gap-2 justify-end">
+                <Button size="sm" variant="outline" onClick={() => setShowPasswordPrompt(false)}>Cancel</Button>
+                <Button size="sm" onClick={handlePasswordSubmit}>Unlock</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header - Brush Settings & AI */}
         <header className="flex items-center justify-between px-4 py-2 border-b bg-card shadow-sm z-10">
           <div className="flex items-center gap-4 flex-1">
@@ -281,6 +320,17 @@ export default function App() {
               >
                 <Trash2 className="h-3 w-3" />
                 Clear
+              </Button>
+            </div>
+            <div className="ml-auto">
+              <Button
+                size="sm"
+                variant={isAdminUnlocked ? "default" : "outline"}
+                className="h-8 gap-2"
+                onClick={handleAdminToggle}
+              >
+                {isAdminUnlocked ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                {isAdminUnlocked ? 'Unlocked' : '***'}
               </Button>
             </div>
           </div>
