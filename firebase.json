@@ -1,7 +1,7 @@
 {
   "hosting": [
     {
-      "site": "ai-diy-123",
+      "site": "<your-hosting-site-id>",
       "public": "frontend/dist",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [
