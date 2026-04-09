@@ -1,0 +1,5 @@
+{
+  "name": "Modern Paint",
+  "description": "A feature-rich, modern web-based drawing application inspired by Windows Paint, built with React and HTML5 Canvas.",
+  "requestFramePermissions": []
+}
