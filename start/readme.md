@@ -2,7 +2,7 @@
 
 ## 架構概述
 
-本項目已分離成前後端獨立服務：
+本專案已分離成前後端獨立服務：
 - **前端**：React + Vite（通訊埠 3000 或 3001）
 - **後端**：FastAPI（通訊埠 8000）
 - **功能**：AI 繪圖、按鈕統計、密碼保護
@@ -67,7 +67,7 @@ cd ai-vibe-c/start
 - **驗證 conda**：
   ```bash
   conda --version
-  conda activate toby  # 啟用 toby 環境
+  conda activate <your-conda-env>  # 啟用環境
   ```
 
 ## 本地啟動
@@ -104,7 +104,7 @@ cd ai-vibe-c/start
 **後端：**
 ```bash
 cd ai-vibe-c/backend
-conda activate toby
+conda activate <your-conda-env>
 pip install -r requirements.txt
 python main.py
 ```
@@ -164,15 +164,15 @@ ADMIN_PASSWORD=admin123
 ## Firebase Hosting 佈署
 本專案使用 Vite 前端，建置結果會輸出到 `frontend/dist`，Firebase Hosting 設定在專案根目錄的 `firebase.json`。根目錄也應該包含 `.firebaserc`，供 CLI 指定要使用的 Firebase 專案。
 
-- `firebase.json` 中的 `hosting.site` 是 Hosting 站點 ID（本例：`ai-diy-123`）。
-- `.firebaserc` 中的 `default` 是 Firebase project ID（本例：`supercuttytoby`）。
+- `firebase.json` 中的 `hosting.site` 是 Hosting 站點 ID（例如：`<your-firebase-site-id>`）。
+- `.firebaserc` 中的 `default` 是 Firebase project ID（例如：`<your-firebase-project-id>`）。
 
 `firebase.json` 範例內容：
 ```json
 {
   "hosting": [
     {
-      "site": "ai-diy-123",
+      "site": "<your-firebase-site-id>",
       "public": "frontend/dist",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [
@@ -184,11 +184,11 @@ ADMIN_PASSWORD=admin123
 ```
 
 ### Firebase 新手注意事項
-1. 先確認你登入的 Firebase 帳號是有 `ai-diy-123` 站點權限的帳號。
+1. 先確認您登入的 Firebase 帳號是有對應站點權限的帳號。
 2. `firebase login` 只是登入 CLI，並不會自動選專案，還要執行 `firebase use --add` 選擇要操作的專案。
-3. 你可以使用 `firebase projects:list` 檢查目前帳號可用的專案。
-4. 佈署時請在專案根目錄執行 `firebase deploy --only hosting:ai-diy-123`。
-5. `firebase deploy` 必須要先 build：`npm run build`，如果沒有 `frontend/dist` 會佈署失敗。
+3. 您可以使用 `firebase projects:list` 檢查目前帳號可用的專案。
+4. 佈署時請在專案根目錄執行 `firebase deploy --only hosting:<your-firebase-site-id>`。
+5. `firebase deploy` 必須要先建置：`npm run build`，如果沒有 `frontend/dist` 會佈署失敗。
 
 ## Step 07：Ngrok 隧道
 如果您想快速把本地後端公開到外網，後端目前支援透過 `pyngrok` 建立 ngrok 隧道。
@@ -199,9 +199,8 @@ ADMIN_PASSWORD=admin123
    NGROK_AUTHTOKEN=您的_ngrok_authtoken
    NGROK_DOMAIN=您的_ngrok_reserved_domain  # 可選
    ```
-2. 確保 `conda activate toby` 環境已安裝後端相依套件：
+2. 確保 Python 環境已安裝後端相依套件：
    ```bash
-   conda activate toby
    pip install -r backend/requirements.txt
    ```
 
@@ -224,21 +223,15 @@ cd ai-vibe-c/start
 1. 啟動後端服務：
    ```bash
    cd backend
-   conda activate toby
    python main.py
    ```
 2. 在另一個終端啟動 ngrok 隧道：
    ```bash
    cd backend
-   conda activate toby
    python ngrok_tunnel.py
    ```
 
 如果 `NGROK_DOMAIN` 已設定且為保留域名，`pyngrok` 會嘗試使用該域名。若無設定，則會自動建立一個 ngrok public URL。
-
-如果您看到 ngrok 錯誤，常見原因包括：
-- 現有 ngrok session 已佔用帳號配額（`ERR_NGROK_108`），請先在 ngrok 儀表板停止現有 agent，或升級付費方案。
-- ngrok config 版本不正確，腳本會建立新的 v3 config 檔案。
 
 ### 注意
 - `firebase login` 和 `ngrok` 是不同服務，`firebase login` 只對 Firebase CLI 有效。
@@ -252,13 +245,7 @@ cd frontend
 npm install
 npm run build
 cd ..
-firebase deploy --only hosting:ai-diy-123
-```
-
-### 也可以用啟動腳本
-```bash
-cd ai-vibe-c
-./start/run local --deploy-firebase
+firebase deploy --only hosting:<your-firebase-site-id>
 ```
 
 ### 關於保護與 .gitignore
@@ -268,11 +255,10 @@ cd ai-vibe-c
   - `.firebase/`
   - `firebase-debug.log`
 - 您可以提交 `firebase.json` 與 `.firebaserc`，因為它們僅包含佈署設定，不包含密鑰。
-- 本專案 `.gitignore` 也已經忽略 `dist/`、`node_modules/`、`package-lock.json` 等常見暫存檔。
 
-如果您希望新增 Firebase 設定或佈署站點，只要先登入對的帳號、再使用 `firebase use --add`，就能正確佈署。
+如果您希望新增 Firebase 設定或佈署站點，只要先登入對應帳號、再使用 `firebase use --add`，就能正確佈署。
 
-## 項目結構
+## 專案結構
 ```
 ai-vibe-c/
 ├── frontend/                # React 前端應用
@@ -344,25 +330,6 @@ ai-vibe-c/
 - **API 文件**：http://localhost:8000/docs
 - **Swagger UI**：http://localhost:8000/redoc
 
-## 開發指南
-
-### 添加新的按鈕追蹤
-在前端 `App.tsx` 中的按鈕處理函式中添加：
-```typescript
-trackButtonEvent('button_name');
-```
-
-### 查看統計數據
-- 通過 API：`curl http://localhost:8000/api/button-stats`
-- 或使用指令稿查看日誌
-
-### 修改密碼
-編輯環境設定檔：
-```env
-VITE_ADMIN_PASSWORD=your_new_password
-ADMIN_PASSWORD=your_new_password
-```
-
 ## 故障排除
 
 ### Docker 相關
@@ -373,7 +340,6 @@ ADMIN_PASSWORD=your_new_password
 ### 本地開發
 
 #### 後端無法啟動
-- 檢查 conda 環境：`conda list`
 - 重新安裝相依套件：`pip install -r requirements.txt`
 - 檢查 API Key 是否設定在 `.env`
 
@@ -386,24 +352,6 @@ ADMIN_PASSWORD=your_new_password
 - 檢查 Gemini API Key 是否有效
 - 檢查配額限制
 - 查看後端日誌中的詳細錯誤
-
-## 測試指令
-
-```bash
-# 健康檢查
-curl http://localhost:8000/health
-
-# 記錄按鈕事件
-curl -X POST http://localhost:8000/api/button-event \
-  -H "Content-Type: application/json" \
-  -d '{"button_name":"test_click","timestamp":1234567890}'
-
-# 查看統計
-curl http://localhost:8000/api/button-stats
-
-# 查看所有事件
-curl http://localhost:8000/api/button-events
-```
 
 ## 相關資源
 - [FastAPI 文件](https://fastapi.tiangolo.com/)
