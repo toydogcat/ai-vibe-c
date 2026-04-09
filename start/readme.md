@@ -1,5 +1,5 @@
 
-# AI Vibe C - 前後端分離開始指南
+# AI Vibe C step04-backend-fastapi - 前後端分離開始指南
 
 ## 架構概述
 
