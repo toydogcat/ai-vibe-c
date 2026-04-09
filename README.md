@@ -17,6 +17,6 @@ Learning Vibe Coding.
 | **Step 3** | `step/03-frontend-vite` | 使用 Vite + Vue/React 建立現代化繪圖介面 (Canvas API) |
 | **Step 4** | `step/04-backend-fastapi` | 實作 Python 後端，處理畫作儲存、讀取與 API 串接 |
 | **Step 5** | `step/05-docker-container` | 撰寫 Dockerfile 與 docker-compose.yml 將前後端容器化 |
-| **Step 6** | `step/06-deploy-firebase` | 前端靜態資源部署至 Firebase Hosting |
+| **Step 6** | `step/06-deploy-firebase` | 前端靜態資源佈署至 Firebase Hosting |
 | **Step 7** | `step/07-tunnel-ngrok` | 配置 Ngrok 環境，讓內網服務可以快速對外展示 |
 | **Step 8** | `step/08-migration-go` | 將 Python 後端重構成 Go (Gin/Echo)，優化併發處理與效能 |
