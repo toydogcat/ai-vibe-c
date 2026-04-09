@@ -1,20 +1,31 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 前端啟動
+1. 進入 frontend 目錄：
+   ```
+   cd frontend
+   ```
 
-# Run and deploy your AI Studio app
+2. 安裝依賴：
+   ```
+   npm install
+   ```
 
-This contains everything you need to run your app locally.
+3. 設置環境變數：
+   - 複製 `env.example` 為 `.env.local`
+   - 填入你的 Gemini API key：
+     ```
+     GEMINI_API_KEY=your_api_key_here
+     ```
 
-View your app in AI Studio: https://ai.studio/apps/167c4f02-b81f-49e6-92ce-b81cc2a04fcc
+4. 啟動開發服務器：
+   ```
+   npm run dev
+   ```
 
-## Run Locally
+5. 在瀏覽器中打開 http://localhost:3000 查看應用
 
-**Prerequisites:**  Node.js
+### 3. 其他命令
+- 構建生產版本：`npm run build`
+- 預覽生產版本：`npm run preview`
+- 清理構建文件：`npm run clean`
+- 類型檢查：`npm run lint`
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`

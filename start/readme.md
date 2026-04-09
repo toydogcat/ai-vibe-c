@@ -5,40 +5,20 @@
 
 ## 快速開始
 
-### 1. 環境準備
-- 確保已安裝 Node.js（推薦版本 18+）
-- 複製 `env.example` 為 `.env` 並填入必要的環境變數
+### 環境準備 安裝 Node.js
+為了順利運行這個項目，請確保你的開發環境已正確設置。以下是詳細步驟：
 
-### 2. 前端啟動
-1. 進入 frontend 目錄：
-   ```
-   cd frontend
-   ```
+- **推薦版本**：Node.js 18 或更高版本（支援最新的 JavaScript 功能和 Vite）。
+- **下載方式**：
+  - 前往 [Node.js 官方網站](https://nodejs.org/) 下載並安裝 LTS 版本。
+  - 或者使用包管理器安裝（例如，在 macOS 上使用 Homebrew：`brew install node`；在 Ubuntu 上：`sudo apt update && sudo apt install nodejs npm`）。
+- **驗證安裝**：安裝後，打開終端機運行以下命令確認版本：
+  ```
+  node --version
+  npm --version
+  ```
+  - 如果版本正確，你應該看到類似 `v18.x.x` 的輸出。
 
-2. 安裝依賴：
-   ```
-   npm install
-   ```
-
-3. 設置環境變數：
-   - 複製 `env.example` 為 `.env.local`
-   - 填入你的 Gemini API key：
-     ```
-     GEMINI_API_KEY=your_api_key_here
-     ```
-
-4. 啟動開發服務器：
-   ```
-   npm run dev
-   ```
-
-5. 在瀏覽器中打開 http://localhost:3000 查看應用
-
-### 3. 其他命令
-- 構建生產版本：`npm run build`
-- 預覽生產版本：`npm run preview`
-- 清理構建文件：`npm run clean`
-- 類型檢查：`npm run lint`
 
 ## 項目結構
 - `frontend/` - React + Vite 前端應用
