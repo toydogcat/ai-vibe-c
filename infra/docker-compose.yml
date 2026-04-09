@@ -4,7 +4,7 @@ services:
   backend:
     build:
       context: ../backend
-      dockerfile: Dockerfile
+      dockerfile: go-backend/Dockerfile
     container_name: ai-vibe-backend
     ports:
       - "8000:8000"

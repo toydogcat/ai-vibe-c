@@ -1,0 +1,23 @@
+# Ignore Python and build artifacts from backend context
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.cache
+
+# Ignore Go build output
+go-backend/main
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore ngrok binary if present
+ngrok
+
+# Ignore temporary and editor files
+*.swp
+*.log
+.vscode/
+.idea/

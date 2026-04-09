@@ -4,14 +4,14 @@
    cd frontend
    ```
 
-2. 安裝依賴：
+2. 安裝相依套件：
    ```
    npm install
    ```
 
-3. 設置環境變數：
+3. 設定環境變數：
    - 複製 `env.example` 為 `.env.local`
-   - 在 `.env.local` 中填入你的 Firebase web app config 變量：
+   - 在 `.env.local` 中填入你的 Firebase web app config 變數：
      ```
      VITE_FIREBASE_API_KEY=你的_api_key
      VITE_FIREBASE_AUTH_DOMAIN=你的_auth_domain
@@ -27,16 +27,15 @@
      VITE_ADMIN_PASSWORD=admin123
      ```
 
-4. 啟動開發服務器：
+4. 啟動開發伺服器：
    ```
    npm run dev
    ```
 
-5. 在瀏覽器中打開 http://localhost:3000 查看應用
+5. 在瀏覽器中打開 http://localhost:3000 查看應用程式
 
-### 3. 其他命令
-- 構建生產版本：`npm run build`
-- 預覽生產版本：`npm run preview`
-- 清理構建文件：`npm run clean`
-- 類型檢查：`npm run lint`
-
+### 3. 其他指令
+- 建置正式版本：`npm run build`
+- 預覽正式版本：`npm run preview`
+- 清理建置檔案：`npm run clean`
+- 型別檢查：`npm run lint`
