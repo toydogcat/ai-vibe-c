@@ -48,9 +48,11 @@ AI Vibe C - 启动脚本
               示例: ./run docker
 
 本地模式选项:
-  --backend-only   - 仅启动后端
-  --frontend-only  - 仅启动前端
-  --no-install     - 跳过依赖安装
+  --backend-only      - 仅启动后端
+  --frontend-only     - 仅启动前端
+  --no-install        - 跳过依赖安装
+  --build-frontend    - 构建前端生产包
+  --deploy-firebase   - 构建前端并部署到 Firebase Hosting
 
 Docker 模式选项:
   --build         - 重建镜像
@@ -60,8 +62,11 @@ Docker 模式选项:
   --down          - 停止并删除容器
 
 示例:
-  ./run local                    # 本地启动前后端
+  ./run local                    # 本地启动前后端（显示命令）
   ./run local --backend-only     # 仅启动后端
+  ./run local --frontend-only    # 仅启动前端
+  ./run local --build-frontend   # 构建前端生产包
+  ./run local --deploy-firebase  # 构建并部署到 Firebase Hosting
   ./run docker                   # Docker 启动
   ./run docker --build           # Docker 重建并启动
   ./run docker --logs            # 查看 Docker 日志
@@ -75,6 +80,8 @@ start_local() {
     local backend_only=false
     local frontend_only=false
     local no_install=false
+    local build_frontend=false
+    local deploy_firebase=false
     
     # Parse options
     for arg in "${@:2}"; do
@@ -82,8 +89,63 @@ start_local() {
             --backend-only) backend_only=true ;;
             --frontend-only) frontend_only=true ;;
             --no-install) no_install=true ;;
+            --build-frontend) build_frontend=true ;;
+            --deploy-firebase) deploy_firebase=true ;;
         esac
     done
+
+    if [[ "$build_frontend" == true ]]; then
+        print_header "构建前端生产包"
+        cd "$PROJECT_DIR/frontend"
+        if [[ "$no_install" != true ]]; then
+            print_warning "安装前端依赖..."
+            npm install --silent
+            print_success "前端依赖已安装"
+        fi
+        npm run build
+        print_success "前端构建完成：$PROJECT_DIR/frontend/dist"
+        return 0
+    fi
+
+    if [[ "$deploy_firebase" == true ]]; then
+        print_header "部署到 Firebase Hosting"
+        cd "$PROJECT_DIR/frontend"
+        if [[ "$no_install" != true ]]; then
+            print_warning "安装前端依赖..."
+            npm install --silent
+            print_success "前端依赖已安装"
+        fi
+        npm run build
+        print_success "前端构建完成：$PROJECT_DIR/frontend/dist"
+        print_header "执行 Firebase 部署"
+        cd "$PROJECT_DIR"
+        firebase deploy --only hosting:ai-diy-123
+        return 0
+    fi
+    
+    if [[ "$frontend_only" == true && "$backend_only" != true ]]; then
+        print_header "启动前端服务"
+        cd "$PROJECT_DIR/frontend"
+        if [[ "$no_install" != true ]]; then
+            print_warning "安装前端依赖..."
+            npm install --silent
+            print_success "前端依赖已安装"
+        fi
+        npm run dev
+        return 0
+    fi
+
+    if [[ "$backend_only" == true && "$frontend_only" != true ]]; then
+        print_header "启动后端服务"
+        cd "$PROJECT_DIR/backend"
+        if [[ "$no_install" != true ]]; then
+            print_warning "安装后端依赖..."
+            conda run -n toby pip install -q -r requirements.txt
+            print_success "后端依赖已安装"
+        fi
+        python main.py
+        return 0
+    fi
     
     if [[ "$frontend_only" != true ]]; then
         print_header "启动后端服务"

@@ -131,6 +131,14 @@ npm run dev
 ```env
 VITE_API_URL=http://localhost:8000
 VITE_ADMIN_PASSWORD=admin123
+# Firebase web app config
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
 ```
 
 ### 後端 (`backend/.env` 或 `infra/.env`)
@@ -140,6 +148,61 @@ GEMINI_MODEL=gemini-2.0-flash
 ADMIN_PASSWORD=admin123
 ```
 
+## Firebase Hosting 部署
+本專案使用 Vite 前端，構建結果會輸出到 `frontend/dist`，Firebase Hosting 設定在專案根目錄的 `firebase.json`。根目錄也應該包含 `.firebaserc`，供 CLI 指定要使用的 Firebase 專案。
+
+- `firebase.json` 中的 `hosting.site` 是 Hosting 站點 ID（本例：`ai-diy-123`）。
+- `.firebaserc` 中的 `default` 是 Firebase project ID（本例：`supercuttytoby`）。
+
+`firebase.json` 範例內容：
+```json
+{
+  "hosting": [
+    {
+      "site": "ai-diy-123",
+      "public": "frontend/dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        { "source": "**", "destination": "/index.html" }
+      ]
+    }
+  ]
+}
+```
+
+### Firebase 新手注意事項
+1. 先確認你登入的 Firebase 帳號是有 `ai-diy-123` 站點權限的帳號。
+2. `firebase login` 只是登入 CLI，並不會自動選專案，還要執行 `firebase use --add` 選擇要操作的專案。
+3. 你可以使用 `firebase projects:list` 檢查目前帳號可用的專案。
+4. 部署時請在專案根目錄執行 `firebase deploy --only hosting:ai-diy-123`。
+5. `firebase deploy` 必須要先 build：`npm run build`，如果沒有 `frontend/dist` 會部署失敗。
+
+### 建議的部署流程
+```bash
+cd /home/toby/workspace/runtime/ai-vibe-c
+cd frontend
+npm install
+npm run build
+cd ..
+firebase deploy --only hosting:ai-diy-123
+```
+
+### 也可以用啟動腳本
+```bash
+cd /home/toby/workspace/runtime/ai-vibe-c
+./start/run local --deploy-firebase
+```
+
+### 關於保護與 .gitignore
+- `firebase login` 只是讓 CLI 訪問 Firebase，並不保護你專案中的敏感本地檔案。
+- `.gitignore` 應該忽略本地環境變數和 Firebase CLI 產生的本機檔案，例如：
+  - `.env` / `.env.local`
+  - `.firebase/`
+  - `firebase-debug.log`
+- 你可以提交 `firebase.json` 與 `.firebaserc`，因為它們僅包含部署設定，不包含密鑰。
+- 本專案 `.gitignore` 也已經忽略 `dist/`、`node_modules/`、`package-lock.json` 等常見暫存檔。
+
+如果你希望新增 Firebase 設定或部署站點，只要先登入對的帳號、再使用 `firebase use --add`，就能正確部署。
 ## 項目結構
 ```
 ai-vibe-c/

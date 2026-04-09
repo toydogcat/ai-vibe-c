@@ -11,9 +11,20 @@
 
 3. 設置環境變數：
    - 複製 `env.example` 為 `.env.local`
-   - 填入你的 Gemini API key：
+   - 在 `.env.local` 中填入你的 Firebase web app config 變量：
      ```
-     GEMINI_API_KEY=your_api_key_here
+     VITE_FIREBASE_API_KEY=你的_api_key
+     VITE_FIREBASE_AUTH_DOMAIN=你的_auth_domain
+     VITE_FIREBASE_PROJECT_ID=你的_project_id
+     VITE_FIREBASE_STORAGE_BUCKET=你的_storage_bucket
+     VITE_FIREBASE_MESSAGING_SENDER_ID=你的_messaging_sender_id
+     VITE_FIREBASE_APP_ID=你的_app_id
+     VITE_FIREBASE_MEASUREMENT_ID=你的_measurement_id
+     ```
+   - 也可保留或修改後端 URL / 管理密碼設定：
+     ```
+     VITE_API_URL=http://localhost:8000
+     VITE_ADMIN_PASSWORD=admin123
      ```
 
 4. 啟動開發服務器：
