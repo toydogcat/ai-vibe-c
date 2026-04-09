@@ -98,3 +98,12 @@ vendor/
 .uv/
 .docker/
 
+# 圖片檔案
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.webp
+*.svg
+
