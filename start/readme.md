@@ -7,7 +7,7 @@
 - **後端**：Go + Gin（本地預設 8000）
 - **功能**：AI 繪圖、按鈕事件統計、密碼保護
 - **外網分享**：使用 ngrok 隧道公開後端服務
-- **部署**：前端 Firebase Hosting、後端可本地 Go、Docker 容器化
+- **佈署**：前端 Firebase Hosting、後端可本地 Go、Docker 容器化
 
 ## 目標
 
@@ -33,7 +33,7 @@ cd ai-vibe-c/start
 # 僅啟動 Ngrok 隧道（後端需先啟動）
 ./run local --ngrok-only
 
-# 將前端建置並部署到 Firebase
+# 將前端建置並佈署到 Firebase
 ./run local --deploy-firebase
 
 # Docker 模式啟動
@@ -85,7 +85,7 @@ cd ai-vibe-c/start
 
 > 注意：`--ngrok-only` 只會啟動 ngrok 隧道，後端需先在本機運行。
 
-### 5. Firebase 部署（前端）
+### 5. Firebase 佈署（前端）
 
 ```bash
 cd ai-vibe-c/start
@@ -97,7 +97,7 @@ cd ai-vibe-c/start
 後端程式位於 `backend/go-backend/`：
 - `main.go`：Gin Web API、按鈕事件統計、AI 繪圖 API
 - `go.mod` / `go.sum`：Go 模組相依套件
-- `Dockerfile`：用於 Docker 部署
+- `Dockerfile`：用於 Docker 佈署
 - `.dockerignore`：忽略不必要檔案
 
 ### Go API 端點
@@ -148,21 +148,21 @@ cd ai-vibe-c/start
 ./run local --go-backend --ngrok
 ```
 
-## Firebase Hosting 部署
+## Firebase Hosting 佈署
 
 前端仍使用 Firebase Hosting，請確認：
 - `firebase login`
 - `firebase use --add`
 - `infra/.env` 已正確配置
 
-部署命令：
+佈署命令：
 
 ```bash
 cd ai-vibe-c/start
 ./run local --deploy-firebase
 ```
 
-> 這個命令會先執行 `npm run build`，再部署 `frontend/dist` 到 Firebase Hosting。
+> 這個命令會先執行 `npm run build`，再佈署 `frontend/dist` 到 Firebase Hosting。
 
 ## Docker 支援
 
@@ -231,7 +231,7 @@ ai-vibe-c/
 - 確認 ngrok 帳號是否有有效代理配額
 - 如果使用保留域名，請檢查 `NGROK_DOMAIN` 是否有效
 
-### Firebase 部署失敗
+### Firebase 佈署失敗
 - 確認 `frontend/dist` 已成功建立
 - 執行 `firebase use --add` 選擇正確專案
 - 確認 `firebase deploy --only hosting:ai-diy-123` 可在專案根目錄執行

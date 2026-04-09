@@ -36,46 +36,46 @@ print_error() {
 
 show_help() {
     cat << EOF
-AI Vibe C - 启动脚本
+AI Vibe C - 啟動腳本
 
 用法: ./run [mode] [options]
 
 模式:
-  local       - 本地运行 (默认)
-              示例: ./run local
+  local       - 本地執行 (預設)
+              範例: ./run local
   
-  docker      - 使用 Docker Compose 运行
-              示例: ./run docker
+  docker      - 使用 Docker Compose 執行
+              範例: ./run docker
 
-本地模式选项:
-  --backend-only      - 仅启动后端
-  --frontend-only     - 仅启动前端
-  --ngrok-only        - 仅启动 Ngrok 隧道
-  --no-install        - 跳过依赖安装
-  --build-frontend    - 构建前端生产包
-  --deploy-firebase   - 构建前端并部署到 Firebase Hosting
-  --ngrok             - 启动前后端并创建 Ngrok 隧道
-  --go-backend        - 使用 Go 后端 (默认使用 Python)
+本地模式選項:
+  --backend-only      - 僅啟動後端
+  --frontend-only     - 僅啟動前端
+  --ngrok-only        - 僅啟動 Ngrok 隧道
+  --no-install        - 跳過相依套件安裝
+  --build-frontend    - 建置前端正式包
+  --deploy-firebase   - 建置前端並佈署到 Firebase Hosting
+  --ngrok             - 啟動前後端並建立 Ngrok 隧道
+  --go-backend        - 使用 Go 後端 (預設使用 Python)
 
-Docker 模式选项:
-  --build         - 重建镜像
-  --detach        - 后台运行
-  --logs          - 查看日志
+Docker 模式選項:
+  --build         - 重建映像檔
+  --detach        - 背景執行
+  --logs          - 查看日誌
   --stop          - 停止容器
-  --down          - 停止并删除容器
+  --down          - 停止並刪除容器
 
-示例:
-  ./run local                    # 本地启动前后端（显示命令）
-  ./run local --backend-only     # 仅启动后端
-  ./run local --frontend-only    # 仅启动前端
-  ./run local --ngrok-only       # 仅启动 Ngrok 隧道
-  ./run local --build-frontend   # 构建前端生产包
-  ./run local --deploy-firebase  # 构建并部署到 Firebase Hosting
-  ./run local --ngrok            # 启动前后端并创建 Ngrok 隧道
-  ./run local --go-backend       # 使用 Go 后端启动
-  ./run local --go-backend --ngrok # 使用 Go 后端并创建 Ngrok 隧道
-  ./run docker                   # Docker 启动
-  ./run docker --build           # Docker 重建并启动
+範例:
+  ./run local                    # 本地啟動前後端
+  ./run local --backend-only     # 僅啟動後端
+  ./run local --frontend-only    # 僅啟動前端
+  ./run local --ngrok-only       # 僅啟動 Ngrok 隧道
+  ./run local --build-frontend   # 建置前端正式包
+  ./run local --deploy-firebase  # 建置及佈署到 Firebase Hosting
+  ./run local --ngrok            # 啟動前後端並建立 Ngrok 隧道
+  ./run local --go-backend       # 使用 Go 後端啟動
+  ./run local --go-backend --ngrok # 使用 Go 後端並建立 Ngrok 隧道
+  ./run docker                   # Docker 啟動
+  ./run docker --build           # Docker 重建並啟動
   ./run docker --logs            # 查看 Docker 日志
   ./run docker --down            # 停止 Docker 容器
 
@@ -108,51 +108,51 @@ start_local() {
     done
 
     if [[ "$build_frontend" == true ]]; then
-        print_header "构建前端生产包"
+        print_header "建置前端正式包"
         cd "$PROJECT_DIR/frontend"
         if [[ "$no_install" != true ]]; then
-            print_warning "安装前端依赖..."
+            print_warning "安裝前端相依套件..."
             npm install --silent
-            print_success "前端依赖已安装"
+            print_success "前端相依套件已安裝"
         fi
         npm run build
-        print_success "前端构建完成：$PROJECT_DIR/frontend/dist"
+        print_success "前端建置完成：$PROJECT_DIR/frontend/dist"
         return 0
     fi
 
     if [[ "$deploy_firebase" == true ]]; then
-        print_header "部署到 Firebase Hosting"
+        print_header "佈署到 Firebase Hosting"
         cd "$PROJECT_DIR/frontend"
         if [[ "$no_install" != true ]]; then
-            print_warning "安装前端依赖..."
+            print_warning "安裝前端相依套件..."
             npm install --silent
-            print_success "前端依赖已安装"
+            print_success "前端相依套件已安裝"
         fi
         npm run build
-        print_success "前端构建完成：$PROJECT_DIR/frontend/dist"
-        print_header "执行 Firebase 部署"
+        print_success "前端建置完成：$PROJECT_DIR/frontend/dist"
+        print_header "執行 Firebase 佈署"
         cd "$PROJECT_DIR"
         firebase deploy --only hosting:ai-diy-123
         return 0
     fi
 
     if [[ "$ngrok_only" == true ]]; then
-        print_header "启动 Ngrok 隧道"
+        print_header "啟動 Ngrok 隧道"
         if [[ "$go_backend" == true ]]; then
-            print_warning "使用 Go 后端..."
+            print_warning "使用 Go 後端..."
             cd "$PROJECT_DIR/backend/go-backend"
             if [[ "$no_install" != true ]]; then
-                print_warning "安装 Go 依赖..."
+                print_warning "安裝 Go 相依套件..."
                 go mod download
-                print_success "Go 依赖已安装"
+                print_success "Go 相依套件已安裝"
             fi
         else
-            print_warning "使用 Python 后端..."
+            print_warning "使用 Python 後端..."
             cd "$PROJECT_DIR/backend"
             if [[ "$no_install" != true ]]; then
-                print_warning "安装后端依赖..."
+                print_warning "安裝後端相依套件..."
                 conda run -n toby pip install -q -r requirements.txt
-                print_success "后端依赖已安装"
+                print_success "後端相依套件已安裝"
             fi
         fi
         conda run -n toby python ngrok_tunnel.py
@@ -160,112 +160,112 @@ start_local() {
     fi
 
     if [[ "$ngrok_mode" == true ]]; then
-        print_header "启动前后端服务 + Ngrok 隧道"
+        print_header "啟動前後端服務 + Ngrok 隧道"
         
-        # 启动后端
-        print_warning "启动后端服务..."
+        # 啟動後端
+        print_warning "啟動後端服務..."
         if [[ "$go_backend" == true ]]; then
-            print_warning "使用 Go 后端..."
+            print_warning "使用 Go 後端..."
             cd "$PROJECT_DIR/backend/go-backend"
             if [[ "$no_install" != true ]]; then
-                print_warning "安装 Go 依赖..."
+                print_warning "安裝 Go 相依套件..."
                 go mod download
-                print_success "Go 依赖已安装"
+                print_success "Go 相依套件已安裝"
             fi
             
-            # 在后台启动 Go 后端
+            # 在背景啟動 Go 後端
             go run main.go &
             BACKEND_PID=$!
-            print_success "Go 后端服务已启动 (PID: $BACKEND_PID)"
+            print_success "Go 後端服務已啟動 (PID: $BACKEND_PID)"
         else
-            print_warning "使用 Python 后端..."
+            print_warning "使用 Python 後端..."
             cd "$PROJECT_DIR/backend"
             if [[ "$no_install" != true ]]; then
                 conda run -n toby pip install -q -r requirements.txt
-                print_success "后端依赖已安装"
+                print_success "後端相依套件已安裝"
             fi
             
-            # 在后台启动 Python 后端
+            # 在背景啟動 Python 後端
             conda run -n toby python main.py &
             BACKEND_PID=$!
-            print_success "Python 后端服务已启动 (PID: $BACKEND_PID)"
+            print_success "Python 後端服務已啟動 (PID: $BACKEND_PID)"
         fi
         
-        # 等待后端启动
+        # 等待後端啟動
         sleep 3
         
-        # 启动前端
-        print_warning "启动前端服务..."
+        # 啟動前端
+        print_warning "啟動前端服務..."
         cd "$PROJECT_DIR/frontend"
         if [[ "$no_install" != true ]]; then
             npm install --silent
-            print_success "前端依赖已安装"
+            print_success "前端相依套件已安裝"
         fi
         
-        # 在后台启动前端
+        # 在背景啟動前端
         npm run dev &
         FRONTEND_PID=$!
-        print_success "前端服务已启动 (PID: $FRONTEND_PID)"
+        print_success "前端服務已啟動 (PID: $FRONTEND_PID)"
         
-        # 等待前端启动
+        # 等待前端啟動
         sleep 5
         
-        # 启动 Ngrok 隧道
-        print_warning "启动 Ngrok 隧道..."
+        # 啟動 Ngrok 隧道
+        print_warning "啟動 Ngrok 隧道..."
         cd "$PROJECT_DIR/backend"
         conda run -n toby python ngrok_tunnel.py &
         NGROK_PID=$!
-        print_success "Ngrok 隧道已启动 (PID: $NGROK_PID)"
+        print_success "Ngrok 隧道已啟動 (PID: $NGROK_PID)"
         
-        print_header "服务启动完成"
+        print_header "服務啟動完成"
         echo -e "${GREEN}前端地址: http://localhost:3000${NC}"
-        echo -e "${GREEN}后端地址: http://localhost:8000${NC}"
+        echo -e "${GREEN}後端地址: http://localhost:8000${NC}"
         if [[ "$go_backend" == true ]]; then
-            echo -e "${GREEN}后端类型: Go${NC}"
+            echo -e "${GREEN}後端類型: Go${NC}"
         else
-            echo -e "${GREEN}后端类型: Python${NC}"
-            echo -e "${GREEN}API 文档: http://localhost:8000/docs${NC}"
+            echo -e "${GREEN}後端類型: Python${NC}"
+            echo -e "${GREEN}API 文檔: http://localhost:8000/docs${NC}"
         fi
-        echo -e "${GREEN}Ngrok 隧道: 等待显示...${NC}"
+        echo -e "${GREEN}Ngrok 隧道: 等待顯示...${NC}"
         echo ""
-        echo -e "${YELLOW}按 Ctrl+C 停止所有服务${NC}"
+        echo -e "${YELLOW}按 Ctrl+C 停止所有服務${NC}"
         
-        # 等待用户中断
-        trap "echo -e '\n${YELLOW}正在停止服务...${NC}'; kill $BACKEND_PID $FRONTEND_PID $NGROK_PID 2>/dev/null; exit 0" INT
+        # 等待用戶中斷
+        trap "echo -e '\n${YELLOW}正在停止服務...${NC}'; kill $BACKEND_PID $FRONTEND_PID $NGROK_PID 2>/dev/null; exit 0" INT
         wait
         return 0
     fi
     
     if [[ "$frontend_only" == true && "$backend_only" != true ]]; then
-        print_header "启动前端服务"
+        print_header "啟動前端服務"
         cd "$PROJECT_DIR/frontend"
         if [[ "$no_install" != true ]]; then
-            print_warning "安装前端依赖..."
+            print_warning "安裝前端相依套件..."
             npm install --silent
-            print_success "前端依赖已安装"
+            print_success "前端相依套件已安裝"
         fi
         npm run dev
         return 0
     fi
 
     if [[ "$backend_only" == true && "$frontend_only" != true ]]; then
-        print_header "启动后端服务"
+        print_header "啟動後端服務"
         if [[ "$go_backend" == true ]]; then
-            print_warning "使用 Go 后端..."
+            print_warning "使用 Go 後端..."
             cd "$PROJECT_DIR/backend/go-backend"
             if [[ "$no_install" != true ]]; then
-                print_warning "安装 Go 依赖..."
+                print_warning "安裝 Go 相依套件..."
                 go mod download
-                print_success "Go 依赖已安装"
+                print_success "Go 相依套件已安裝"
             fi
             go run main.go
         else
-            print_warning "使用 Python 后端..."
+            print_warning "使用 Python 後端..."
             cd "$PROJECT_DIR/backend"
             if [[ "$no_install" != true ]]; then
-                print_warning "安装后端依赖..."
+                print_warning "安裝後端相依套件..."
                 conda run -n toby pip install -q -r requirements.txt
-                print_success "后端依赖已安装"
+                print_success "後端相依套件已安裝"
             fi
             conda run -n toby python main.py
         fi
@@ -273,35 +273,35 @@ start_local() {
     fi
     
     if [[ "$frontend_only" != true ]]; then
-        print_header "启动后端服务"
+        print_header "啟動後端服務"
         
         if [[ "$go_backend" == true ]]; then
-            print_warning "使用 Go 后端..."
+            print_warning "使用 Go 後端..."
             cd "$PROJECT_DIR/backend/go-backend"
             
             if [[ "$no_install" != true ]]; then
-                print_warning "安装 Go 依赖..."
+                print_warning "安裝 Go 相依套件..."
                 go mod download
-                print_success "Go 依赖已安装"
+                print_success "Go 相依套件已安裝"
             fi
             
-            print_success "Go 后端启动命令已准备"
-            echo "在新终端运行此命令："
+            print_success "Go 後端啟動指令已準備"
+            echo "在新終端執行此指令："
             echo ""
             echo -e "${BLUE}cd $PROJECT_DIR/backend/go-backend && go run main.go${NC}"
             echo ""
         else
-            print_warning "使用 Python 后端..."
+            print_warning "使用 Python 後端..."
             cd "$PROJECT_DIR/backend"
             
             if [[ "$no_install" != true ]]; then
-                print_warning "安装后端依赖..."
+                print_warning "安裝後端相依套件..."
                 conda run -n toby pip install -q -r requirements.txt
-                print_success "后端依赖已安装"
+                print_success "後端相依套件已安裝"
             fi
             
-            print_success "Python 后端启动命令已准备"
-            echo "在新终端运行此命令："
+            print_success "Python 後端啟動指令已準備"
+            echo "在新終端執行此指令："
             echo ""
             echo -e "${BLUE}cd $PROJECT_DIR/backend && conda activate toby && python main.py${NC}"
             echo ""
@@ -309,27 +309,27 @@ start_local() {
     fi
     
     if [[ "$backend_only" != true ]]; then
-        print_header "启动前端服务"
+        print_header "啟動前端服務"
         
         cd "$PROJECT_DIR/frontend"
         
         if [[ "$no_install" != true ]]; then
-            print_warning "安装前端依赖..."
+            print_warning "安裝前端相依套件..."
             npm install --silent
-            print_success "前端依赖已安装"
+            print_success "前端相依套件已安裝"
         fi
         
-        print_success "前端启动命令已准备"
-        echo "在新终端运行此命令："
+        print_success "前端啟動指令已準備"
+        echo "在新終端執行此指令："
         echo ""
         echo -e "${BLUE}cd $PROJECT_DIR/frontend && npm run dev${NC}"
         echo ""
     fi
     
-    print_header "本地启动信息"
+    print_header "本地啟動資訊"
     echo -e "${GREEN}前端地址: http://localhost:3000${NC}"
-    echo -e "${GREEN}后端地址: http://localhost:8000${NC}"
-    echo -e "${GREEN}API 文档: http://localhost:8000/docs${NC}"
+    echo -e "${GREEN}後端地址: http://localhost:8000${NC}"
+    echo -e "${GREEN}API 文檔: http://localhost:8000/docs${NC}"
 }
 
 # Docker mode functions
@@ -355,8 +355,73 @@ start_docker() {
     
     # Check if .env exists
     if [[ ! -f .env ]]; then
-        print_warning ".env 文件不存在，使用 .env.example 作为模板"
+        print_warning ".env 檔案不存在，使用 .env.example 作為範本"
         if [[ -f .env.example ]]; then
+            cp .env.example .env
+            print_warning "已建立 .env，請編輯後重新執行"
+            print_warning "編輯指令: nano $PROJECT_DIR/infra/.env"
+            return 1
+        fi
+    fi
+    
+    if [[ "$down_mode" == true ]]; then
+        print_header "停止並刪除容器"
+        docker-compose down
+        print_success "容器已停止並刪除"
+        return 0
+    fi
+    
+    if [[ "$stop_mode" == true ]]; then
+        print_header "停止容器"
+        docker-compose stop
+        print_success "容器已停止"
+        return 0
+    fi
+    
+    if [[ "$logs_mode" == true ]]; then
+        print_header "查看日誌"
+        docker-compose logs -f
+        return 0
+    fi
+    
+    if [[ "$build" == true ]]; then
+        print_header "建置映像檔"
+        docker-compose build --no-cache
+        print_success "映像檔建置完成"
+    fi
+    
+    print_header "啟動 Docker 容器"
+    
+    if [[ "$detach" == true ]]; then
+        docker-compose up -d
+        print_success "容器已在背景啟動"
+        echo ""
+        sleep 2
+        docker-compose ps
+    else
+        docker-compose up
+    fi
+}
+
+# Main
+case "$MODE" in
+    local)
+        start_local "$@"
+        ;;
+    docker)
+        start_docker "$@"
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    *)
+        print_error "未知模式: $MODE"
+        echo ""
+        show_help
+        exit 1
+        ;;
+esac
+.example ]]; then
             cp .env.example .env
             print_warning "已创建 .env，请编辑后重新运行"
             print_warning "编辑命令: nano $PROJECT_DIR/infra/.env"
