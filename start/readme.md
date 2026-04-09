@@ -1,11 +1,10 @@
-
 # AI Vibe C step04-backend-fastapi - 前後端分離開始指南
 
 ## 架構概述
 
 本項目已分離成前後端獨立服務：
-- **前端**：React + Vite（端口 3000 或 3001）
-- **後端**：FastAPI（端口 8000）
+- **前端**：React + Vite（通訊埠 3000 或 3001）
+- **後端**：FastAPI（通訊埠 8000）
 - **功能**：AI 繪圖、按鈕統計、密碼保護
 
 ## 環境準備
@@ -23,7 +22,7 @@
 - **驗證 conda**：
   ```bash
   conda --version
-  conda activate toby  # 啟用 toby 環境
+  conda activate <your-conda-env>  # 啟用環境
   ```
 
 ## 快速啟動
@@ -32,8 +31,9 @@
 
 在新終端機開啟：
 ```bash
-cd /home/toby/workspace/runtime/ai-vibe-c/backend
-conda activate toby
+# 進入後端目錄
+cd backend
+conda activate <your-conda-env>
 pip install -r requirements.txt
 python main.py
 ```
@@ -46,12 +46,13 @@ python main.py
 
 在新終端機開啟：
 ```bash
-cd /home/toby/workspace/runtime/ai-vibe-c/frontend
+# 進入前端目錄
+cd frontend
 npm install  # 首次運行
 npm run dev
 ```
 
-前端將在 `http://localhost:3000`（或下一個可用端口）啟動
+前端將在 `http://localhost:3000`（或下一個可用通訊埠）啟動
 
 ## 功能說明
 
@@ -97,7 +98,7 @@ ai-vibe-c/
 │   ├── .env.local     # 前端環境變量
 │   └── package.json
 ├── backend/           # FastAPI 後端服務
-│   ├── main.py        # 主應用入點
+│   ├── main.py        # 主應用進入點
 │   ├── config.py      # 配置管理
 │   ├── models.py      # 資料模型
 │   ├── stats.py       # 統計管理
@@ -132,7 +133,7 @@ VITE_ADMIN_PASSWORD=your_new_password
 
 ### 後端無法啟動
 - 檢查 conda 環境：`conda list`
-- 重新安裝依賴：`pip install -r requirements.txt`
+- 重新安裝相依套件：`pip install -r requirements.txt`
 - 檢查 API Key 是否設定在 `.env`
 
 ### 前端無法連接後端
@@ -149,4 +150,3 @@ VITE_ADMIN_PASSWORD=your_new_password
 - [FastAPI 文件](https://fastapi.tiangolo.com/)
 - [React 文件](https://react.dev/)
 - [Gemini API](https://ai.google.dev/docs)
-
