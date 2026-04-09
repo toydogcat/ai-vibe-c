@@ -83,7 +83,7 @@ cd ai-vibe-c/start
 ./run local --ngrok-only
 ```
 
-> 注意：`--ngrok-only` 只會啟動 ngrok 隧道，後端需先在本機運行。
+> 注意：`--ngrok-only` 只會啟動 ngrok 隧道，後端需先在本機執行。
 
 ### 5. Firebase 佈署（前端）
 
@@ -116,7 +116,7 @@ cd backend/go-backend
 go run main.go
 ```
 
-如果你已經開啟 `start/run`，則可直接使用 `--go-backend` 選項。
+如果您已經使用 `start/run`，則可直接使用 `--go-backend` 選項。
 
 ## Ngrok 隧道
 
@@ -177,7 +177,7 @@ cd ai-vibe-c/start
 ./run docker
 ```
 
-### Docker 紀錄 (Logs)
+### Docker 日誌 (Logs)
 
 ```bash
 ./run docker --logs
@@ -189,7 +189,7 @@ cd ai-vibe-c/start
 ./run docker --down
 ```
 
-## 本專案結構
+## 專案結構
 
 ```text
 ai-vibe-c/
@@ -204,7 +204,7 @@ ai-vibe-c/
 │   │   ├── go.sum
 │   │   ├── main.go
 │   │   ├── .dockerignore
-│   │   └── main            # build artifact,已忽略
+│   │   └── main            # 建置產物, 已被忽略
 │   ├── ngrok                # ngrok 執行檔
 │   ├── ngrok_tunnel.py      # ngrok 隧道腳本
 │   ├── requirements.txt
@@ -223,7 +223,7 @@ ai-vibe-c/
 
 ### Go 後端無法啟動
 - 檢查通訊埠 8000 是否已被佔用
-- 確認 `GO` 已安裝：`go version`
+- 確認 `go` 已安裝：`go version`
 - 確認 `backend/.env` 中 `GEMINI_API_KEY` 已設定
 
 ### Ngrok 隧道失敗
@@ -234,7 +234,7 @@ ai-vibe-c/
 ### Firebase 佈署失敗
 - 確認 `frontend/dist` 已成功建立
 - 執行 `firebase use --add` 選擇正確專案
-- 確認 `firebase deploy --only hosting:ai-diy-123` 可在專案根目錄執行
+- 確認 `firebase deploy --only hosting:<your-firebase-site-id>` 可在專案根目錄執行
 
 ## 相關資源
 - [Go 官方網站](https://golang.org/dl/)

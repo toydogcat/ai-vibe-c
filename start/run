@@ -76,7 +76,7 @@ Docker 模式選項:
   ./run local --go-backend --ngrok # 使用 Go 後端並建立 Ngrok 隧道
   ./run docker                   # Docker 啟動
   ./run docker --build           # Docker 重建並啟動
-  ./run docker --logs            # 查看 Docker 日志
+  ./run docker --logs            # 查看 Docker 日誌
   ./run docker --down            # 停止 Docker 容器
 
 EOF
@@ -132,7 +132,7 @@ start_local() {
         print_success "前端建置完成：$PROJECT_DIR/frontend/dist"
         print_header "執行 Firebase 佈署"
         cd "$PROJECT_DIR"
-        firebase deploy --only hosting:ai-diy-123
+        firebase deploy --only hosting:<your-firebase-site-id>
         return 0
     fi
 
@@ -151,11 +151,11 @@ start_local() {
             cd "$PROJECT_DIR/backend"
             if [[ "$no_install" != true ]]; then
                 print_warning "安裝後端相依套件..."
-                conda run -n toby pip install -q -r requirements.txt
+                conda run -n ai-vibe pip install -q -r requirements.txt
                 print_success "後端相依套件已安裝"
             fi
         fi
-        conda run -n toby python ngrok_tunnel.py
+        conda run -n ai-vibe python ngrok_tunnel.py
         return 0
     fi
 
@@ -181,12 +181,12 @@ start_local() {
             print_warning "使用 Python 後端..."
             cd "$PROJECT_DIR/backend"
             if [[ "$no_install" != true ]]; then
-                conda run -n toby pip install -q -r requirements.txt
+                conda run -n ai-vibe pip install -q -r requirements.txt
                 print_success "後端相依套件已安裝"
             fi
             
             # 在背景啟動 Python 後端
-            conda run -n toby python main.py &
+            conda run -n ai-vibe python main.py &
             BACKEND_PID=$!
             print_success "Python 後端服務已啟動 (PID: $BACKEND_PID)"
         fi
@@ -213,7 +213,7 @@ start_local() {
         # 啟動 Ngrok 隧道
         print_warning "啟動 Ngrok 隧道..."
         cd "$PROJECT_DIR/backend"
-        conda run -n toby python ngrok_tunnel.py &
+        conda run -n ai-vibe python ngrok_tunnel.py &
         NGROK_PID=$!
         print_success "Ngrok 隧道已啟動 (PID: $NGROK_PID)"
         
@@ -264,10 +264,10 @@ start_local() {
             cd "$PROJECT_DIR/backend"
             if [[ "$no_install" != true ]]; then
                 print_warning "安裝後端相依套件..."
-                conda run -n toby pip install -q -r requirements.txt
+                conda run -n ai-vibe pip install -q -r requirements.txt
                 print_success "後端相依套件已安裝"
             fi
-            conda run -n toby python main.py
+            conda run -n ai-vibe python main.py
         fi
         return 0
     fi
@@ -296,14 +296,14 @@ start_local() {
             
             if [[ "$no_install" != true ]]; then
                 print_warning "安裝後端相依套件..."
-                conda run -n toby pip install -q -r requirements.txt
+                conda run -n ai-vibe pip install -q -r requirements.txt
                 print_success "後端相依套件已安裝"
             fi
             
             print_success "Python 後端啟動指令已準備"
             echo "在新終端執行此指令："
             echo ""
-            echo -e "${BLUE}cd $PROJECT_DIR/backend && conda activate toby && python main.py${NC}"
+            echo -e "${BLUE}cd $PROJECT_DIR/backend && conda activate ai-vibe && python main.py${NC}"
             echo ""
         fi
     fi
@@ -395,71 +395,6 @@ start_docker() {
     if [[ "$detach" == true ]]; then
         docker-compose up -d
         print_success "容器已在背景啟動"
-        echo ""
-        sleep 2
-        docker-compose ps
-    else
-        docker-compose up
-    fi
-}
-
-# Main
-case "$MODE" in
-    local)
-        start_local "$@"
-        ;;
-    docker)
-        start_docker "$@"
-        ;;
-    help|--help|-h)
-        show_help
-        ;;
-    *)
-        print_error "未知模式: $MODE"
-        echo ""
-        show_help
-        exit 1
-        ;;
-esac
-.example ]]; then
-            cp .env.example .env
-            print_warning "已创建 .env，请编辑后重新运行"
-            print_warning "编辑命令: nano $PROJECT_DIR/infra/.env"
-            return 1
-        fi
-    fi
-    
-    if [[ "$down_mode" == true ]]; then
-        print_header "停止并删除容器"
-        docker-compose down
-        print_success "容器已停止并删除"
-        return 0
-    fi
-    
-    if [[ "$stop_mode" == true ]]; then
-        print_header "停止容器"
-        docker-compose stop
-        print_success "容器已停止"
-        return 0
-    fi
-    
-    if [[ "$logs_mode" == true ]]; then
-        print_header "查看日志"
-        docker-compose logs -f
-        return 0
-    fi
-    
-    if [[ "$build" == true ]]; then
-        print_header "构建镜像"
-        docker-compose build --no-cache
-        print_success "镜像构建完成"
-    fi
-    
-    print_header "启动 Docker 容器"
-    
-    if [[ "$detach" == true ]]; then
-        docker-compose up -d
-        print_success "容器已在后台启动"
         echo ""
         sleep 2
         docker-compose ps
