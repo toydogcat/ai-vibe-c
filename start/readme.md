@@ -1,5 +1,5 @@
 
-# AI Vibe C step05-docker-container - 前後端分離開始指南
+# AI Vibe C step07-tunnel-ngrok - 後端利用 ngrok
 
 ## 架構概述
 
@@ -84,6 +84,18 @@ cd ai-vibe-c/start
 
 # 仅启动前端，跳过依赖安装
 ./run local --frontend-only --no-install
+
+# 仅启动 Ngrok 隧道
+./run local --ngrok-only
+
+# 启动前后端 + Ngrok 隧道（用于分享应用）
+./run local --ngrok
+
+# 构建前端生产包
+./run local --build-frontend
+
+# 构建并部署到 Firebase Hosting
+./run local --deploy-firebase
 ```
 
 ### 方式 2：手動啟動
@@ -176,6 +188,61 @@ ADMIN_PASSWORD=admin123
 3. 你可以使用 `firebase projects:list` 檢查目前帳號可用的專案。
 4. 部署時請在專案根目錄執行 `firebase deploy --only hosting:ai-diy-123`。
 5. `firebase deploy` 必須要先 build：`npm run build`，如果沒有 `frontend/dist` 會部署失敗。
+
+## Step 07：Ngrok 隧道
+如果你想快速把本地後端公開到外網，後端目前支援透過 `pyngrok` 建立 ngrok 隧道。
+
+### 要求
+1. 在 `backend/.env` 中加入：
+   ```env
+   NGROK_AUTHTOKEN=你的_ngrok_authtoken
+   NGROK_DOMAIN=你的_ngrok_reserved_domain  # 可選
+   ```
+2. 確保 `conda activate toby` 環境已安裝後端依賴：
+   ```bash
+   conda activate toby
+   pip install -r backend/requirements.txt
+   ```
+
+本腳本會自動下載並安裝 ngrok v3 二進位檔，如果本機尚未安裝。
+
+### 使用方式
+
+#### 方法 1：使用啟動腳本（推薦）
+```bash
+cd ai-vibe-c/start
+
+# 仅启动 Ngrok 隧道
+./run local --ngrok-only
+
+# 启动前后端 + Ngrok 隧道（用于分享应用）
+./run local --ngrok
+```
+
+#### 方法 2：手動啟動
+1. 啟動後端服務：
+   ```bash
+   cd /home/toby/workspace/runtime/ai-vibe-c/backend
+   conda activate toby
+   python main.py
+   ```
+2. 在另一個終端啟動 ngrok 隧道：
+   ```bash
+   cd /home/toby/workspace/runtime/ai-vibe-c/backend
+   conda activate toby
+   python ngrok_tunnel.py
+   ```
+
+如果 `NGROK_DOMAIN` 已設定且為保留域名，`pyngrok` 會嘗試使用該域名。若無設定，則會自動建立一個 ngrok public URL。
+
+如果你看到 ngrok 錯誤，常見原因包括：
+- 現有 ngrok session 已佔用帳號配額（`ERR_NGROK_108`），請先在 ngrok 儀表板停止現有 agent，或升級付費方案。
+- ngrok config 版本不正確，腳本會建立新的 v3 config 檔案。
+
+### 注意
+- `firebase login` 和 `ngrok` 是不同服務，`firebase login` 只對 Firebase CLI 有效。
+- 你的 ngrok token 不應該提交到 git，因為它是敏感憑證。
+- `.gitignore` 已忽略 `.env`、`.env.local` 與 `.firebase/`，這樣可避免把本地機密資料放到版本控制中。
 
 ### 建議的部署流程
 ```bash

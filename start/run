@@ -50,9 +50,11 @@ AI Vibe C - 启动脚本
 本地模式选项:
   --backend-only      - 仅启动后端
   --frontend-only     - 仅启动前端
+  --ngrok-only        - 仅启动 Ngrok 隧道
   --no-install        - 跳过依赖安装
   --build-frontend    - 构建前端生产包
   --deploy-firebase   - 构建前端并部署到 Firebase Hosting
+  --ngrok             - 启动前后端并创建 Ngrok 隧道
 
 Docker 模式选项:
   --build         - 重建镜像
@@ -65,8 +67,10 @@ Docker 模式选项:
   ./run local                    # 本地启动前后端（显示命令）
   ./run local --backend-only     # 仅启动后端
   ./run local --frontend-only    # 仅启动前端
+  ./run local --ngrok-only       # 仅启动 Ngrok 隧道
   ./run local --build-frontend   # 构建前端生产包
   ./run local --deploy-firebase  # 构建并部署到 Firebase Hosting
+  ./run local --ngrok            # 启动前后端并创建 Ngrok 隧道
   ./run docker                   # Docker 启动
   ./run docker --build           # Docker 重建并启动
   ./run docker --logs            # 查看 Docker 日志
@@ -79,18 +83,22 @@ EOF
 start_local() {
     local backend_only=false
     local frontend_only=false
+    local ngrok_only=false
     local no_install=false
     local build_frontend=false
     local deploy_firebase=false
+    local ngrok_mode=false
     
     # Parse options
     for arg in "${@:2}"; do
         case $arg in
             --backend-only) backend_only=true ;;
             --frontend-only) frontend_only=true ;;
+            --ngrok-only) ngrok_only=true ;;
             --no-install) no_install=true ;;
             --build-frontend) build_frontend=true ;;
             --deploy-firebase) deploy_firebase=true ;;
+            --ngrok) ngrok_mode=true ;;
         esac
     done
 
@@ -120,6 +128,74 @@ start_local() {
         print_header "执行 Firebase 部署"
         cd "$PROJECT_DIR"
         firebase deploy --only hosting:ai-diy-123
+        return 0
+    fi
+
+    if [[ "$ngrok_only" == true ]]; then
+        print_header "启动 Ngrok 隧道"
+        cd "$PROJECT_DIR/backend"
+        if [[ "$no_install" != true ]]; then
+            print_warning "安装后端依赖..."
+            conda run -n toby pip install -q -r requirements.txt
+            print_success "后端依赖已安装"
+        fi
+        conda run -n toby python ngrok_tunnel.py
+        return 0
+    fi
+
+    if [[ "$ngrok_mode" == true ]]; then
+        print_header "启动前后端服务 + Ngrok 隧道"
+        
+        # 启动后端
+        print_warning "启动后端服务..."
+        cd "$PROJECT_DIR/backend"
+        if [[ "$no_install" != true ]]; then
+            conda run -n toby pip install -q -r requirements.txt
+            print_success "后端依赖已安装"
+        fi
+        
+        # 在后台启动后端
+        conda run -n toby python main.py &
+        BACKEND_PID=$!
+        print_success "后端服务已启动 (PID: $BACKEND_PID)"
+        
+        # 等待后端启动
+        sleep 3
+        
+        # 启动前端
+        print_warning "启动前端服务..."
+        cd "$PROJECT_DIR/frontend"
+        if [[ "$no_install" != true ]]; then
+            npm install --silent
+            print_success "前端依赖已安装"
+        fi
+        
+        # 在后台启动前端
+        npm run dev &
+        FRONTEND_PID=$!
+        print_success "前端服务已启动 (PID: $FRONTEND_PID)"
+        
+        # 等待前端启动
+        sleep 5
+        
+        # 启动 Ngrok 隧道
+        print_warning "启动 Ngrok 隧道..."
+        cd "$PROJECT_DIR/backend"
+        conda run -n toby python ngrok_tunnel.py &
+        NGROK_PID=$!
+        print_success "Ngrok 隧道已启动 (PID: $NGROK_PID)"
+        
+        print_header "服务启动完成"
+        echo -e "${GREEN}前端地址: http://localhost:3000${NC}"
+        echo -e "${GREEN}后端地址: http://localhost:8000${NC}"
+        echo -e "${GREEN}API 文档: http://localhost:8000/docs${NC}"
+        echo -e "${GREEN}Ngrok 隧道: 等待显示...${NC}"
+        echo ""
+        echo -e "${YELLOW}按 Ctrl+C 停止所有服务${NC}"
+        
+        # 等待用户中断
+        trap "echo -e '\n${YELLOW}正在停止服务...${NC}'; kill $BACKEND_PID $FRONTEND_PID $NGROK_PID 2>/dev/null; exit 0" INT
+        wait
         return 0
     fi
     

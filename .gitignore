@@ -102,3 +102,7 @@ vendor/
 .uv/
 .docker/
 
+# === Ngrok ===
+# Ngrok binary (auto-downloaded by ngrok_tunnel.py)
+backend/ngrok
+
