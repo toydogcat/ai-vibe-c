@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: ai-vibe-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.0-flash}
+    volumes:
+      - ../backend:/app
+    networks:
+      - ai-vibe-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    image: node:18-alpine
+    container_name: ai-vibe-frontend
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+    volumes:
+      - ../frontend:/app
+    command: sh -c "npm install && npm run dev"
+    networks:
+      - ai-vibe-network
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+
+networks:
+  ai-vibe-network:
+    driver: bridge
